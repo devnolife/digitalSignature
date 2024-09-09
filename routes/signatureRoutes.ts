@@ -15,7 +15,7 @@ let signatureRequests : {
 
 // Route to handle signature creation
 signatureRoutes.post('/create-signature', async(req : Request, res : Response) => {
-  const { surat, kepada } = req.body;
+  const { surat, kepada, no_hpdituju } = req.body;
   const id = uuidv4();  // Generate unique ID for the request
   const kodeVerifikasi = Math.floor(1000 + Math.random() * 9000); // Generate 4-digit code
 
@@ -56,14 +56,28 @@ signatureRoutes.post('/verify-signature/:id', (req : Request, res : Response) =>
 
   const signatureRequest = signatureRequests[id];
   if (!signatureRequest) {
-    return res.send('<h1>Surat tidak ditemukan</h1>');
+    return res.status(404).json({
+      message : "Tidak Menemukan Surat",
+      code : 200,
+      status : false
+    })
   }
 
-  if (signatureRequest.kodeVerifikasi === parseInt(kodeVerifikasi, 10)) {
+  if(signatureRequest.kodeVerifikasi === parseInt(kodeVerifikasi, 10)) {
+    
     signatureRequest.status = 'approved';
-    return res.sendFile(path.join(__dirname, '..', 'views', 'success.html'));
+
+    return res.json({
+      data : signatureRequest,
+      code : 200,
+      message : "Berhasil Mendapatkan Surat"
+    });
   } else {
-    return res.send('<h1>Kode verifikasi salah, silakan coba lagi</h1>');
+    return res.status(400).json({
+      status : false,
+      code : 400,
+      message :"Kode Verifikasi Salah"
+    })
   }
 });
 
