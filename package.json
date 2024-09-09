@@ -3,14 +3,20 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node app",
+    "dev": "ts-node app --watch"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/express": "^4.17.21",
+    "@whiskeysockets/baileys": "^6.7.7",
     "body-parser": "^1.20.2",
     "express": "^4.19.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4",
     "uuid": "^10.0.0"
   }
 }
