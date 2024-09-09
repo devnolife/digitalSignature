@@ -1,31 +1,43 @@
+import { Request, Response } from "express";
+import { getSockg } from "../baileysocket";
+
 const express = require('express');
-const router = express.Router();
+const signatureRoutes = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
 // Simulate database
-let signatureRequests = {};
+let signatureRequests : {
+  [key : string] : {
+    surat : string, kepada : string, kodeVerifikasi : number, status : "success" | "pending" | "approved"
+  }
+} = {};
 
 // Route to handle signature creation
-router.post('/create-signature', (req, res) => {
+signatureRoutes.post('/create-signature', async(req : Request, res : Response) => {
   const { surat, kepada } = req.body;
   const id = uuidv4();  // Generate unique ID for the request
   const kodeVerifikasi = Math.floor(1000 + Math.random() * 9000); // Generate 4-digit code
 
+  console.log(req.body)
   // Store the request details in the simulated database
   signatureRequests[id] = { surat, kepada, kodeVerifikasi, status: 'pending' };
 
   // Send the verification link to the signer (for simplicity, return the link here)
-  res.send(`
-        <h1>Surat berhasil dibuat</h1>
-        <p>Nomor Surat: ${id}</p>
-        <p>Kode Verifikasi telah dikirim ke ${kepada}</p>
-        <a href="/approve-signature/${id}">Link Persetujuan</a>
-    `);
+  await getSockg()?.sendMessage("6281341477442@s.whatsapp.net", {
+    text : `Nomor Surat ${id}\nDikirim Kepada ${kepada}.\n\n\tBerikut adalah kode verifikasinya : ${kodeVerifikasi}`
+  })
+
+
+  return res.json({
+    message :"Berhasil",
+    status : true,
+    code : 200
+  })
 });
 
 // Route to render approval page
-router.get('/approve-signature/:id', (req, res) => {
+signatureRoutes.get('/approve-signature/:id', (req : Request, res : Response) => {
   const id = req.params.id;
   const signatureRequest = signatureRequests[id];
 
@@ -38,7 +50,7 @@ router.get('/approve-signature/:id', (req, res) => {
 });
 
 // Route to handle signature approval
-router.post('/verify-signature/:id', (req, res) => {
+signatureRoutes.post('/verify-signature/:id', (req : Request, res : Response) => {
   const id = req.params.id;
   const { kodeVerifikasi } = req.body;
 
@@ -55,4 +67,4 @@ router.post('/verify-signature/:id', (req, res) => {
   }
 });
 
-module.exports = router;
+export default signatureRoutes
